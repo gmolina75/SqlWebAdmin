@@ -28,7 +28,7 @@ namespace SqlWebAdmin
 				RolesGrid.DataSource = database.DatabaseRoles;
 				RolesGrid.DataBind();
 
-				//CreateRoleLink.NavigateUrl="CreateDatabaseRole.aspx?database=" + Request["database"];
+				CreateRoleLink.NavigateUrl = "CreateDatabaseRole.aspx?database=" + Server.UrlEncode(Request["database"]);
 
 				server.Disconnect();
 			}

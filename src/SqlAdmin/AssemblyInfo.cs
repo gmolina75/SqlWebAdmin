@@ -12,7 +12,6 @@
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Security.Permissions;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("SqlAdmin")]
@@ -24,10 +23,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 [assembly: CLSCompliant(true)]
-[assembly: FileIOPermission(SecurityAction.RequestMinimum)]
 [assembly: ComVisible(false)]
 
 [assembly: AssemblyVersion("1.0.0")]
 
-[assembly: AssemblyDelaySign(false)]
-[assembly: AssemblyKeyFileAttribute(@"..\..\sqladminkey.snk")]

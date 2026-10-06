@@ -26,7 +26,7 @@ namespace SqlWebAdmin
 			SqlUser user = database.Users.Add(Logins.SelectedValue, Username.Text.Trim());
 
 			server.Disconnect();
-			Response.Redirect("EditDatabaseUser.aspx?database=" + Request.Params["database"] + "&user=" + Username.Text.Trim());
+			Response.Redirect("EditDatabaseUser.aspx?database=" + Server.UrlEncode(Request.Params["database"]) + "&user=" + Server.UrlEncode(Username.Text.Trim()));
 		}
 
 		protected void Page_Load(object sender, System.EventArgs e)

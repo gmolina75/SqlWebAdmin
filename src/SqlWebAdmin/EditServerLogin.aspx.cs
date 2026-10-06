@@ -116,7 +116,7 @@ namespace SqlWebAdmin
 				case "EditRoles":
 					if (this.Save()) 
 					{
-						Response.Redirect("DatabaseRoles.aspx?database=" + (string)DatabaseAccessGrid.DataKeys[e.Item.ItemIndex]);
+						Response.Redirect("DatabaseRoles.aspx?database=" + Server.UrlEncode((string)DatabaseAccessGrid.DataKeys[e.Item.ItemIndex]));
 					}
 					break;
 			}
@@ -216,7 +216,7 @@ namespace SqlWebAdmin
 			} 
 			catch (Exception ex) 
 			{
-				ErrorMessage.Text = ex.Message;
+				ErrorMessage.Text = Server.HtmlEncode(ex.Message);
 				return false;
 			} 
 			finally 

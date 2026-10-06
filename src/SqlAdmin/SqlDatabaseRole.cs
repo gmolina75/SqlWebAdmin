@@ -80,6 +80,13 @@ namespace SqlAdmin
 		#region methods
 
 		/// <summary>
+		/// Permanently removes this database role from the database.
+		/// </summary>
+		public void Remove() {
+			this.dmoDatabaseRole.Remove();
+		}
+
+		/// <summary>
 		/// Add a new User to current database role.
 		/// </summary>
 		/// <param name="userName">The UserName</param>

@@ -17,7 +17,7 @@ namespace SqlWebAdmin
 
 		protected void Cancel_Click(object sender, EventArgs e) 
 		{
-			Response.Redirect("DatabaseUsers.aspx?database=" + Request["Database"]);
+			Response.Redirect("DatabaseUsers.aspx?database=" + Server.UrlEncode(Request["Database"]));
 		}
 
 		protected void Save_Click(object sender, EventArgs e) 
@@ -47,7 +47,7 @@ namespace SqlWebAdmin
 			} 
 			catch (Exception ex) 
 			{
-				ErrorMessage.Text = ex.Message;
+				ErrorMessage.Text = Server.HtmlEncode(ex.Message);
 				return;
 			}
 			finally 
@@ -55,7 +55,7 @@ namespace SqlWebAdmin
 				server.Disconnect();
 			}
 
-			Response.Redirect("DatabaseUsers.aspx?database=" + Request["database"]);
+			Response.Redirect("DatabaseUsers.aspx?database=" + Server.UrlEncode(Request["database"]));
 		}
 
 		protected override void OnLoad(EventArgs e)

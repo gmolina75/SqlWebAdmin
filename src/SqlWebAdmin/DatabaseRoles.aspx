@@ -97,7 +97,6 @@
                                             <td height="4" valign="middle"><img src="images/spacer.gif" width="1" height="4" alt="" border="0"></td>
                                             <!--END ONE LINE-->
                                         </tr>
-                                        <%--
                                         <tr>
 											<td align="right">
 												<asp:HyperLink Runat="server" CssClass="createLink" ID="CreateRoleLink">
@@ -106,7 +105,6 @@
 												</asp:HyperLink>
 											</td>
                                         </tr>
-                                        --%>
                                         <tr>
                                             <td bgcolor="white" class="databaseListItem">
                                             
@@ -141,7 +139,7 @@
 														<%--
 														<asp:TemplateColumn>
 															<ItemTemplate>
-																<a href=DeleteDatabaseRole.aspx?database=<%=Request["database"]%>&role=<%#((SqlDatabaseRole)Container.DataItem).Name%>>Delete</a>
+																<a href=DeleteDatabaseRole.aspx?database=<%=Server.UrlEncode(Request["database"])%>&role=<%#Server.UrlEncode(((SqlDatabaseRole)Container.DataItem).Name)%>>Delete</a>
 															</ItemTemplate>
 														</asp:TemplateColumn>
 														--%>

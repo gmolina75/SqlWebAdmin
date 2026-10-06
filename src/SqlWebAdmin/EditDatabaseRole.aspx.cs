@@ -21,7 +21,7 @@ namespace SqlWebAdmin
 			if (!Page.IsPostBack) 
 			{
 				if (Request["role"] == null)
-					Response.Redirect("DatabaseRoles.aspx?database=" + Request["database"]);
+					Response.Redirect("DatabaseRoles.aspx?database=" + Server.UrlEncode(Request["database"]));
 
 				SqlServer server = SqlServer.CurrentServer;
 				server.Connect();
@@ -30,7 +30,7 @@ namespace SqlWebAdmin
 
 				SqlDatabaseRole role = database.DatabaseRoles[Request["role"]];
 				if (role == null)
-					Response.Redirect("DatabaseRoles.aspx?database=" + Request["database"]);
+					Response.Redirect("DatabaseRoles.aspx?database=" + Server.UrlEncode(Request["database"]));
 
 				RoleNameLabel.Text = role.Name;
 				RoleTypeLabel.Text = role.AppRole?"Application":"Standard";
@@ -93,7 +93,7 @@ namespace SqlWebAdmin
 			} 
 			catch (Exception ex) 
 			{
-				ErrorMessage.Text = ex.Message;
+				ErrorMessage.Text = Server.HtmlEncode(ex.Message);
 				return;
 			} 
 			finally 
@@ -101,7 +101,7 @@ namespace SqlWebAdmin
 				server.Disconnect();
 			}
 
-			Response.Redirect("DatabaseRoles.aspx?database=" + Request["database"]);
+			Response.Redirect("DatabaseRoles.aspx?database=" + Server.UrlEncode(Request["database"]));
 		}
 	}
 }

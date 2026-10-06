@@ -140,7 +140,7 @@
 													</tr>
 													<tr>
 														<td colspan="2" align="right" class="databaseListItem">
-															<asp:Button Text="Create Role" Runat="server"/>
+															<span>Password (application roles only):</span> <asp:TextBox ID="RolePassword" TextMode="password" MaxLength="128" Runat="server"/> &nbsp; <asp:Button Text="Create Role" OnClick="CreateRole_Click" Runat="server"/>
 														</td>
 													</tr>
 													<tr>

@@ -55,7 +55,6 @@ namespace SqlAdmin {
                 {
                     return null;
                 }
-                server.Disconnect();
             
             }
         }

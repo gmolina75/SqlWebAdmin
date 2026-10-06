@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>SqlAdmin.Tests</RootNamespace>
+    <AssemblyName>SqlAdmin.Tests</AssemblyName>
+    <LangVersion>7.3</LangVersion>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SqlAdmin\SqlAdmin.csproj" />
+  </ItemGroup>
+
+</Project>

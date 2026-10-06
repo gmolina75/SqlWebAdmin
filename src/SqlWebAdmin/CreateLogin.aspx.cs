@@ -50,11 +50,11 @@ namespace SqlWebAdmin
 							);
 				
 						// Redirect user to the edit screen so they can edit more properties
-						Response.Redirect("EditServerLogin.aspx?Login=" + newLogin.Name);
+						Response.Redirect("EditServerLogin.aspx?Login=" + Server.UrlEncode(newLogin.Name));
 					} 
 					catch (Exception ex) 
 					{
-						ErrorMessage.Text = ex.Message;
+						ErrorMessage.Text = Server.HtmlEncode(ex.Message);
 					}
 				}
 

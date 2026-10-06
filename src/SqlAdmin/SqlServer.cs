@@ -237,8 +237,7 @@ namespace SqlAdmin {
 			try {
 				myConnection.Open();
 			}
-			catch (SqlException ex) {
-				string message = ex.Message;
+			catch (SqlException) {
 				success = false;
 			}
 			finally {
@@ -247,6 +246,61 @@ namespace SqlAdmin {
 
 			return success;
 
+		}
+
+		/// <summary>
+		/// Splits a batch of SQL statements into independent batches at each "go" statement,
+		/// mirroring the parsing SQL Server itself applies to sqlcmd-style batches.
+		/// </summary>
+		/// <param name="query">A string containing a batch of SQL queries.</param>
+		/// <returns>The non-empty batches, with surrounding whitespace trimmed.</returns>
+		public static string[] SplitSqlBatches(string query) {
+			if (query == null)
+				throw new ArgumentNullException("query");
+
+			// Tack on whitespace so that the RegEx doesn't mess up
+			query += "\r\n";
+
+			// Split query at each "go"
+			Regex regex = new Regex("[\r\n][gG][oO][\r\n]");
+
+			MatchCollection matches = regex.Matches(query);
+
+			ArrayList batches = new ArrayList();
+			int prevIndex = 0;
+			string tquery;
+
+			for (int i = 0; i < matches.Count; i++) {
+				Match m = matches[i];
+
+				tquery = query.Substring(prevIndex, m.Index - prevIndex);
+
+				if (tquery.Trim().Length > 0)
+					batches.Add(tquery.Trim());
+
+				prevIndex = m.Index + 3;
+			}
+
+			tquery = query.Substring(prevIndex, query.Length - prevIndex);
+
+			if (tquery.Trim().Length > 0)
+				batches.Add(tquery.Trim());
+
+			return (string[])batches.ToArray(typeof(string));
+		}
+
+		/// <summary>
+		/// Ensures a database name cannot be used to alter the connection string
+		/// (connection string injection through characters such as ';' or '=').
+		/// </summary>
+		/// <param name="database">The database name to validate.</param>
+		/// <exception cref="ArgumentException">The name contains connection string delimiters.</exception>
+		public static void ValidateDatabaseName(string database) {
+			if (database == null || database.Length == 0)
+				return;
+
+			if (database.IndexOfAny(new char[] { ';', '=', '"' }) >= 0)
+				throw new ArgumentException("Invalid database name.", "database");
 		}
 
 		/// <summary>
@@ -283,47 +337,21 @@ namespace SqlAdmin {
 
 			try {
 				// Get connection string and add database name if necessary
-				if (database == null || database.Length == 0)
+				if (database == null || database.Length == 0) {
 					myConnection = new SqlConnection(GetConnectionString());
-				else
+				}
+				else {
+					ValidateDatabaseName(database);
 					myConnection = new SqlConnection(GetConnectionString() + "; Initial Catalog=" + database);
+				}
 
 				myConnection.Open();
 
-				// Tack on whitespace so that the RegEx doesn't mess up
-				query += "\r\n";
+				// Split the batch at each "go" statement and execute each one independently
+				string[] batches = SplitSqlBatches(query);
 
-				// Split query at each "go"
-				Regex regex = new Regex("[\r\n][gG][oO][\r\n]");
-
-				MatchCollection matches = regex.Matches(query);
-
-				int prevIndex = 0;
-				string tquery;
-
-				for (int i = 0; i < matches.Count; i++) {
-					Match m = matches[i];
-
-					tquery = query.Substring(prevIndex, m.Index - prevIndex);
-
-					if (tquery.Trim().Length > 0) {
-						SqlDataAdapter myCommand = new SqlDataAdapter(tquery.Trim(), myConnection);
-
-						DataSet singleresult = new DataSet();
-						myCommand.Fill(singleresult);
-
-						for (int j = 0; j < singleresult.Tables.Count; j++) {
-							result.Add(singleresult.Tables[j]);
-						}
-					}
-
-					prevIndex = m.Index + 3;
-				}
-
-				tquery = query.Substring(prevIndex, query.Length - prevIndex);
-
-				if (tquery.Trim().Length > 0) {
-					SqlDataAdapter myCommand = new SqlDataAdapter(tquery.Trim(), myConnection);
+				foreach (string batch in batches) {
+					SqlDataAdapter myCommand = new SqlDataAdapter(batch, myConnection);
 
 					DataSet singleresult = new DataSet();
 					myCommand.Fill(singleresult);
@@ -333,12 +361,14 @@ namespace SqlAdmin {
 					}
 				}
 			}
-			catch (Exception ex) {
-				System.Diagnostics.Debug.WriteLine(ex.ToString());
-			}
 			finally {
-				myConnection.ChangeDatabase("master");
-				myConnection.Close();
+				// The connection may never have opened (unreachable server or missing
+				// database); only touch it when it actually exists. Errors are no
+				// longer swallowed here - callers report them to the user.
+				if (myConnection != null) {
+					myConnection.Close();
+					myConnection.Dispose();
+				}
 			}
 
 			return (DataTable[])result.ToArray(typeof(DataTable));
@@ -351,7 +381,7 @@ namespace SqlAdmin {
 		public static SqlServer CurrentServer {
 			get {
 				if (AdminUser.CurrentUser == null) {
-					HttpContext.Current.Response.Redirect("~/Default.aspx?error=sessionexpired");
+					HttpContext.Current.Response.Redirect("Login.aspx?error=sessionexpired");
 					return null;
 				}
 

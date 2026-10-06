@@ -122,6 +122,46 @@ namespace SqlAdmin
 
 
 		/// <summary>
+		/// Creates a new database role in the database this collection represents.
+		/// </summary>
+		/// <param name="name">The role name.</param>
+		/// <param name="applicationRole">True for an application role (password protected), false for a standard role.</param>
+		/// <param name="password">The password for an application role; ignored for standard roles.</param>
+		/// <returns>The newly created SqlDatabaseRole.</returns>
+		public SqlDatabaseRole Add(string name, bool applicationRole, string password) {
+			// Validation
+			if (name == null || name.Trim().Length == 0)
+				throw new ArgumentException("A database role must have a valid name.");
+
+			if (applicationRole && (password == null || password.Length == 0))
+				throw new ArgumentException("An application role requires a password.");
+
+			if (this[name] != null)
+				throw new ArgumentException(String.Format("The database role '{0}' already exists.", name));
+
+			// Create the role through DMO, mirroring SqlUserCollection.Add
+			NativeMethods.IDatabaseRole dmoRole = (NativeMethods.IDatabaseRole)new NativeMethods.DatabaseRole();
+			dmoRole.SetName(name);
+
+			if (applicationRole) {
+				dmoRole.SetAppRole(true);
+				dmoRole.SetPassword(password);
+			}
+
+			database.dmoDatabase.GetDatabaseRoles().Add(dmoRole);
+
+			SqlDatabaseRole role = new SqlDatabaseRole(name);
+			role.dmoDatabaseRole = dmoRole;
+			role.Database = this.database;
+
+			if (this.sqlDatabaseRoles == null)
+				this.sqlDatabaseRoles = new ArrayList();
+			this.sqlDatabaseRoles.Add(role);
+
+			return role;
+		}
+
+		/// <summary>
 		/// Updates the SqlDatabaseRoleCollection with any changes made since the last call to Refresh.
 		/// 
 		/// </summary>

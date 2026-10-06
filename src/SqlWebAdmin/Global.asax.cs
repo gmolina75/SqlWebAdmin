@@ -30,6 +30,18 @@ namespace SqlWebAdmin {
             Application.Add("Error", Server.GetLastError());
        }
 
+        /// <summary>
+        /// Adds hardening headers to every response. These live here rather than
+        /// in web.config because system.web/httpProtocol is not recognized by the
+        /// configuration system this application compiles against.
+        /// </summary>
+        protected void Application_EndRequest(Object sender, EventArgs e) {
+            Response.AppendHeader("X-Frame-Options", "SAMEORIGIN");
+            Response.AppendHeader("X-Content-Type-Options", "nosniff");
+            Response.AppendHeader("X-XSS-Protection", "1; mode=block");
+            Response.AppendHeader("Referrer-Policy", "same-origin");
+        }
+
 			protected void Application_AuthenticateRequest(Object sender, EventArgs e) {
 
 				if (Context.User == null ) {
@@ -45,7 +57,7 @@ namespace SqlWebAdmin {
 					try {
 						authTicket = FormsAuthentication.Decrypt(authCookie.Value);
 					}
-					catch (Exception ex) {
+					catch (Exception) {
 						//Write the exception to the Event Log.
 						return;
 					}
@@ -67,11 +79,10 @@ namespace SqlWebAdmin {
 			}
             protected void Session_End(Object sender, EventArgs e)
             {
-                SqlServer server = SqlServer.CurrentServer;           
+                // Session state is discarded by ASP.NET itself, and this event runs without
+                // an active request, so there is nothing to clean up here (creating a
+                // SqlServer or touching Response in Session_End would be wrong).
 
-                SqlDatabase database = SqlDatabase.CurrentDatabase(server);
-                server = null;
-                database = null;
             }
 
 			public Global() {

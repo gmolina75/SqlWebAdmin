@@ -39,6 +39,8 @@ namespace SqlWebAdmin
                     return "Table does not exist";
                 case 1003:
                     return "Column does not exist";
+                case 1004:
+                    return "Database role does not exist";
                 default:
                     return "Unknown";
             }
@@ -48,7 +50,13 @@ namespace SqlWebAdmin
         {
             // There are two kinds of errors - custom errors with numbers, and uncaught exceptions
             if (Request["error"] != null) {
-				ErrorLabel.Text = String.Format("Error {0}: {1}", Server.HtmlEncode(Request["error"]), ErrorLookup(Convert.ToInt32(Request["error"])));
+				int errorId;
+				if (int.TryParse(Request["error"], out errorId)) {
+					ErrorLabel.Text = String.Format("Error {0}: {1}", errorId, ErrorLookup(errorId));
+				}
+				else {
+					ErrorLabel.Text = "An unknown error occurred.";
+				}
             }
             else {
                 ErrorLabel.Text = "";
@@ -56,7 +64,9 @@ namespace SqlWebAdmin
                 Exception x = (Exception)Application["Error"];
 
                 while (x != null) {
-                    ErrorLabel.Text += x.Message.Replace("\n", "<br>") + "<br><br>" + x.StackTrace.Replace("\n", "<br>") + "<br><hr><br>";
+                    string message = x.Message ?? String.Empty;
+                    string stackTrace = x.StackTrace ?? String.Empty;
+                    ErrorLabel.Text += Server.HtmlEncode(message).Replace("\n", "<br>") + "<br><br>" + Server.HtmlEncode(stackTrace).Replace("\n", "<br>") + "<br><hr><br>";
                     x = x.InnerException;
                 }
 

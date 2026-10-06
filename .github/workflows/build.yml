@@ -1,0 +1,39 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build SqlAdmin
+        run: msbuild src\SqlAdmin\SqlAdmin.csproj /p:Configuration=Release /v:m /nologo
+
+      - name: Build ContextMenu
+        run: msbuild src\ContextMenu\ContextMenu.csproj /p:Configuration=Release /v:m /nologo
+
+      - name: Build unit tests
+        run: msbuild tests\SqlAdmin.Tests\SqlAdmin.Tests.csproj /restore /p:Configuration=Release /v:m /nologo
+
+      - name: Run unit tests
+        run: .\tests\SqlAdmin.Tests\bin\Release\net48\SqlAdmin.Tests.exe
+
+      - name: Stage website dependencies
+        shell: cmd
+        run: |
+          if not exist src\SqlWebAdmin\Bin mkdir src\SqlWebAdmin\Bin
+          copy /Y src\SqlAdmin\bin\SqlAdmin.dll src\SqlWebAdmin\Bin\
+          copy /Y src\ContextMenu\bin\Release\ContextMenu.dll src\SqlWebAdmin\Bin\
+          copy /Y src\ExternalReferences\AjaxControlToolkit.dll src\SqlWebAdmin\Bin\
+
+      - name: Precompile website
+        shell: cmd
+        run: C:\Windows\Microsoft.NET\Framework64\v4.0.30319\aspnet_compiler.exe -v /SqlWebAdmin -p "%GITHUB_WORKSPACE%\src\SqlWebAdmin" "%GITHUB_WORKSPACE%\_precompiled"

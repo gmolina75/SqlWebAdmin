@@ -4,6 +4,10 @@
 # Freebuff workspace metadata
 .freebuff/
 
+# Generated XML documentation (build output, regenerated on every build)
+/src/SqlAdmin/doc/SqlAdmin.xml
+/src/SqlAdmin/documentation.xml
+
 # User-specific files
 *.suo
 *.user

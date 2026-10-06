@@ -189,6 +189,8 @@ namespace SqlAdmin {
                     size = database.GetSize();
                 }
                 catch {
+                    // Not fatal: the size may be unavailable for security reasons,
+                    // in which case the database is listed with size -1 ("unknown").
                 }
 
                 SqlDatabase db = new SqlDatabase(name, size);

@@ -25,7 +25,7 @@ namespace SqlAdmin {
 
 		public Security() {
 			this.context = HttpContext.Current;
-			this.webserver = System.Configuration.ConfigurationSettings.AppSettings["WebServer"];
+			this.webserver = System.Configuration.ConfigurationManager.AppSettings["WebServer"];
 		}
 
 		#region properties
@@ -38,7 +38,7 @@ namespace SqlAdmin {
 		/// What type of webserver is this IIS or Cassini
 		/// </summary>
 		public string WebServer {
-			get { return webserver.ToLower(); }
+			get { return webserver == null ? String.Empty : webserver.ToLower(); }
 		}
 
 		/// <summary>
@@ -63,7 +63,8 @@ namespace SqlAdmin {
 			//Create the ticket, and add the groups.
 			bool isCookiePersistent = persist;
 			string userData =null;
-			userData = password + "," + loginType.ToString();
+			// Only the login type belongs in the ticket - never the password.
+			userData = loginType.ToString();
 			FormsAuthenticationTicket authTicket = new FormsAuthenticationTicket(1, username, DateTime.Now, DateTime.Now.AddMinutes(60), isCookiePersistent, userData);
 			
 			//Encrypt the ticket.
@@ -71,6 +72,7 @@ namespace SqlAdmin {
 				
 			//Create a cookie, and then add the encrypted ticket to the cookie as data.
 			HttpCookie authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket);
+			authCookie.HttpOnly = true;
 		
 			if(true == isCookiePersistent)
 				authCookie.Expires = authTicket.Expiration;
@@ -88,15 +90,11 @@ namespace SqlAdmin {
 		/// <param name="password">password</param>
 		/// <returns>Indicates whether the impersonation process was successful.</returns>
 		public bool Impersonate(string username, string domain, string password) {
-			try {
-				if ( this.WebServer == "iis" ) 
-					return false;
-				return this.DoImpersonate(username, domain, password);
-			} catch (Exception ex){
-				throw ex;
+			if ( this.WebServer == "iis" )
 				return false;
-			}
-		}		
+
+			return this.DoImpersonate(username, domain, password);
+		}
 
 		/// <summary>
 		/// Ends impersonation 
@@ -206,12 +204,26 @@ namespace SqlAdmin {
 		/// </summary>
 		public  void StopImpersonate() {
 		
-			//impersonatedUser.Undo();
+			// Undo the impersonation context before releasing the token handles.
+			if (impersonatedUser != null) {
+				try {
+					impersonatedUser.Undo();
+				}
+				catch {
+					// The context may already be disposed; nothing to undo.
+				}
+				impersonatedUser = null;
+			}
+
 			// Free the tokens.
-			if (tokenHandle != IntPtr.Zero)
+			if (tokenHandle != IntPtr.Zero) {
 				CloseHandle(tokenHandle);
-			if (dupeTokenHandle != IntPtr.Zero) 
+				tokenHandle = IntPtr.Zero;
+			}
+			if (dupeTokenHandle != IntPtr.Zero) {
 				CloseHandle(dupeTokenHandle);
+				dupeTokenHandle = IntPtr.Zero;
+			}
 
 		
 		}

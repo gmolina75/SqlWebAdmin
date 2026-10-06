@@ -24,12 +24,12 @@ namespace SqlWebAdmin
 			database.Users[Request["user"]].Remove();
 			
 			server.Disconnect();
-			Response.Redirect("DatabaseUsers.aspx?database=" + Request["database"]);
+			Response.Redirect("DatabaseUsers.aspx?database=" + Server.UrlEncode(Request["database"]));
 		}
 
 		protected void No_Click(object sender, EventArgs e) 
 		{
-			Response.Redirect("DatabaseUsers.aspx?database=" + Request["database"]);
+			Response.Redirect("DatabaseUsers.aspx?database=" + Server.UrlEncode(Request["database"]));
 		}
 
 		protected override void OnLoad(EventArgs e)

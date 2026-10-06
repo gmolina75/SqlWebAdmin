@@ -33,7 +33,8 @@ namespace SqlWebAdmin
         {
 			AdminUser.CurrentUser = null;
 
-            Response.Redirect("default.aspx?action=logout");
+            FormsAuthentication.SignOut();
+            Response.Redirect("Login.aspx?action=logout");
         }
 
         #region Web Form Designer generated code

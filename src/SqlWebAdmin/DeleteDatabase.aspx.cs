@@ -82,14 +82,14 @@ namespace SqlWebAdmin
 				} 
 				catch (Exception ex) 
 				{
-					ErrorMessage.Text = ex.Message;
+					ErrorMessage.Text = Server.HtmlEncode(ex.Message);
 				}
             }
             else {
                 server.Disconnect();
 
                 // Database doesn't exist - break out and go to error page
-                Response.Redirect(String.Format("error.aspx?error={1}", 1000));
+                Response.Redirect(String.Format("error.aspx?error={0}", 1000));
                 return;
             }
 

@@ -18,7 +18,6 @@ namespace SqlWebAdmin {
     /// Summary description for Login.
     /// </summary>
     public partial class Login : Page {
-        readonly Security security = new Security();
 
 		public Login() {
 			Page.Init += new System.EventHandler(Page_Init);
@@ -86,7 +85,8 @@ namespace SqlWebAdmin {
 				if (security.WebServer == "iis" && System.Security.Principal.WindowsIdentity.GetCurrent().Name != this.UsernameTextBox.Text) {
 
 					ErrorLabel.Visible = true;
-					ErrorLabel.Text = "IIS verion of SQL Web Admin doesn't support windows logins other than your own.<br>";
+					ErrorLabel.Text = "IIS version of SQL Web Admin doesn't support windows logins other than your own.<br>";
+					return;
 
 				}
 
@@ -96,7 +96,7 @@ namespace SqlWebAdmin {
 					useIntegrated = true;
 
 				}
-				catch (System.ComponentModel.Win32Exception w32Ex) {
+				catch (System.ComponentModel.Win32Exception) {
 
 					ErrorLabel.Visible = true;
 					ErrorLabel.Text = "Invalid username and/or password, or server does not exist.";
@@ -106,7 +106,7 @@ namespace SqlWebAdmin {
 				catch (Exception ex) {
 
 					ErrorLabel.Visible = true;
-					ErrorLabel.Text = ex.Message;
+					ErrorLabel.Text = Server.HtmlEncode(ex.Message);
 					return;
 				}
 

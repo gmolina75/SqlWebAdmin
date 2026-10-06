@@ -38,7 +38,7 @@ namespace SqlWebAdmin
 			} 
 			catch (Exception ex) 
 			{
-				ErrorMessage.Text = ex.Message;
+				ErrorMessage.Text = Server.HtmlEncode(ex.Message);
 				return;
 			} 
 			finally 
