@@ -103,6 +103,13 @@
 													</tr>
 												</table>
 												<br>
+												<asp:Panel ID="EmptyDatabasesPanel" runat="server" Visible="False">
+													<div class="emptyState">
+														<strong>No databases to show</strong>
+														Your login may not have permission to view them, or this server
+														has none yet. Use <em>Create new database</em> above to add one.
+													</div>
+												</asp:Panel>
 												<asp:datagrid id="DatabasesDataGrid" runat="server" GridLines="None" Border="0" AutoGenerateColumns="False" Width="100%" CellPadding="4" CellSpacing="1">
 													<HeaderStyle CssClass="tableHeader"></HeaderStyle>
 													<ItemStyle CssClass="tableItems"></ItemStyle>

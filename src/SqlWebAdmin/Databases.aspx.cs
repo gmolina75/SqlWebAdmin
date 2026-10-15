@@ -56,6 +56,11 @@ namespace SqlWebAdmin
             }
             DatabasesDataGrid.DataSource = ds;
             DatabasesDataGrid.DataBind();
+
+            // An empty result set used to render as a lone header bar with no
+            // explanation. Say what happened and what to do about it.
+            EmptyDatabasesPanel.Visible = databases.Count == 0;
+            DatabasesDataGrid.Visible = databases.Count > 0;
         }
 
         protected void Page_Init(object sender, EventArgs e)

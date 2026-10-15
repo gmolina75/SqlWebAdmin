@@ -173,13 +173,40 @@ namespace SqlAdmin {
         }
 
         /// <summary>
-        /// Get Table Data
+        /// Gets every row in the table.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A DataTable containing all the rows of the table.</returns>
+        /// <remarks>
+        /// Prefer <see cref="GetTableData(int)"/> when the rows are only being
+        /// displayed: an unbounded SELECT on a large table can exhaust memory.
+        /// </remarks>
         public DataTable GetTableData()
         {
-            // Grab data from table
-            DataTable[] tables = Database.Query(string.Format("select * from [{0}].[{1}]",owner,name));
+            return GetTableData(0);
+        }
+
+        /// <summary>
+        /// Gets a limited number of rows from the table.
+        /// </summary>
+        /// <param name="maxRows">
+        /// The maximum number of rows to return, or 0 for no limit.
+        /// </param>
+        /// <returns>A DataTable containing at most maxRows rows.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">maxRows is negative.</exception>
+        public DataTable GetTableData(int maxRows)
+        {
+            if (maxRows < 0)
+                throw new ArgumentOutOfRangeException("maxRows", "The row limit cannot be negative.");
+
+            // Identifier quoting lives in SqlIdentifier so that owner/table names
+            // containing ']' cannot break out of the statement.
+            string sql;
+            if (maxRows == 0)
+                sql = "select * from " + SqlIdentifier.QuoteQualified(owner, name);
+            else
+                sql = "select top (" + maxRows.ToString(System.Globalization.CultureInfo.InvariantCulture) + ") * from " + SqlIdentifier.QuoteQualified(owner, name);
+
+            DataTable[] tables = Database.Query(sql);
             return tables[0];
         }
 
@@ -198,7 +225,7 @@ namespace SqlAdmin {
         public string ScriptData(SqlScriptType scriptType) {
 
             // Grab data from table
-            DataTable[] tables = Database.Query("select * from [" + name + "]");
+            DataTable[] tables = Database.Query("select * from " + SqlIdentifier.QuoteQualified(owner, name));
 
             DataTable table = tables[0];
 
@@ -213,7 +240,7 @@ namespace SqlAdmin {
             string[] columnNamesArray = new string[this.Columns.Count];
 
             for (int i = 0; i < this.Columns.Count; i++) {
-                columnNamesArray[i] = "[" + this.Columns[i].ColumnInformation.Name + "]";
+                columnNamesArray[i] = SqlIdentifier.Quote(this.Columns[i].ColumnInformation.Name);
 
                 if (this.Columns[i].ColumnInformation.Identity) {
                     hasIdentity = true;
@@ -223,58 +250,27 @@ namespace SqlAdmin {
             string columnNames = String.Join(", ", columnNamesArray);
 
             if (hasIdentity)
-                sb.Append("SET identity_insert [" + this.Name + "] on\r\n\r\n");
+                sb.Append("SET identity_insert " + SqlIdentifier.Quote(this.Name) + " on\r\n\r\n");
 
             // Go through each row
             for (int i = 0; i < table.Rows.Count; i++) {
                 object[] cols = table.Rows[i].ItemArray;
-                sb.Append(String.Format("INSERT [{0}] ({1}) VALUES (", name, columnNames));
+                sb.Append("INSERT " + SqlIdentifier.Quote(name) + " (" + columnNames + ") VALUES (");
 
                 // And through each column within the row
                 for (int j = 0; j < cols.Length; j++) {
                     if (j > 0)
                         sb.Append(", ");
 
-                    System.Type dataType = table.Columns[j].DataType;
-
-                    // If null, print null, otherwise output data based on type
+                    // NULL, numerics, dates, unicode strings, booleans and binary
+                    // values are all rendered by SqlLiteral: escaping lives in one
+                    // place, numbers never depend on the server's regional settings,
+                    // and byte pairs are always two hex digits wide.
                     if (table.Rows[i].IsNull(j)) {
-                        // Database Null is just NULL
                         sb.Append("NULL");
                     }
-                    else if (dataType == typeof(System.Int32) ||
-                             dataType == typeof(System.Int16) ||
-                             dataType == typeof(System.Decimal) ||
-                             dataType == typeof(System.Single)) {
-                        // Numeric datatypes we just emit as-is
-                        sb.Append(cols[j]);
-                    }
-                    else if (dataType == typeof(System.DateTime) ||
-                             dataType == typeof(System.String)) {
-                        // Strings and date/time's get quoted
-
-                        // Escape single quotes in strings (replace with two single quotes)
-                        sb.Append(String.Format("'{0}'", cols[j].ToString().Replace("'", "''")));
-                    }
-                    else if (dataType == typeof(System.Boolean)) {
-                        // Booleans are false=0 and true=1
-                        if ((System.Boolean)cols[j])
-                            sb.Append("1");
-                        else
-                            sb.Append("0");
-                    }
-                    else if (dataType == typeof(System.Byte[])) {
-                        // Byte arrays are in the form 0x0123456789ABCDEF
-                        System.Byte[] array = (System.Byte[])cols[j];
-                        sb.Append("0x");
-                        for (int a = 0; a < array.Length; a++)
-                            sb.Append(array[a].ToString("X"));
-                    }
                     else {
-                        // Default is to call ToString() and quote it
-
-                        // Escape single quotes in strings (replace with two single quotes)
-                        sb.Append(String.Format("'{0}'", cols[j].ToString().Replace("'", "''")));
+                        sb.Append(SqlLiteral.Format(cols[j]));
                     }
                 }
 
@@ -289,7 +285,7 @@ namespace SqlAdmin {
 
             // If we turned on identity insert, turn it off now
             if (hasIdentity)
-                sb.Append("SET identity_insert [" + this.Name + "] off\r\nGO\r\n");
+                sb.Append("SET identity_insert " + SqlIdentifier.Quote(this.Name) + " off\r\nGO\r\n");
 
             return sb.ToString();
         }

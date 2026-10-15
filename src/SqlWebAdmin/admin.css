@@ -1,195 +1,564 @@
-/******************************************************************************/
-/*DEFAULT STYLES FOR ALL SECTIONS**********************************************/
-/******************************************************************************/
+/* ==========================================================================
+   Web Data Administrator - stylesheet
+   --------------------------------------------------------------------------
+   Design direction
+     World      : a Windows/SQL Server console. Silver hardware chrome,
+                  sky-blue location band, a green "online" dot. The palette is
+                  taken from that world (and from the shipped logo artwork),
+                  not from a generic UI kit.
+     Signature   : the left tool rail with its dotted rule, and the dotted
+                  divider that opens every section.
+     Depth       : borders only. No elevation shadows - this is a dense,
+                  technical tool; whitespace and tonal shifts carry hierarchy.
+     Density     : workbench-tight. 4px spacing base, 8/12/16px steps.
+     Type        : Segoe UI (the native Windows UI face - deliberate, not a
+                  default), 1.25 scale from 14px, weight+colour over size.
 
-body						  { font-family: Tahoma, MS Sans Serif, Arial, Sans Serif;
-							    font-weight: normal;
-				 			    font-size: 70%;
-							    color: #000000;
-							    margin-top: 0px;
-		  		 			    margin-left: 0px;
-							    margin-right: 0px;
-							    margin-bottom: 0px; }
+   Every class that pages already reference still exists here; new classes are
+   additive so the ~62 legacy .aspx files keep working unchanged.
+   ========================================================================== */
 
-a:link						  { color: #003399;
-				  				text-decoration: none; }
-								
-a:visited					  { color: #003399;
-				  				text-decoration: none; }
-								
-a:active					  { color: #CC3300;
-				  				text-decoration: none; }
-								
-a:hover						  { color: #CC3300;
-				  				text-decoration: none; }
-								
-table						  { font-family: Tahoma, MS Sans Serif, Arial, Sans Serif;
-							    font-weight: normal;
-				 			    font-size: 100%;
-							    color: #000000; }
-								
-tr.tableHeader				  { background-color: #808080;
-								font-weight: bold; }
-								
-td.tableHeader				  { background-color: #808080;
-								font-weight: bold; }								
-								
-tr.tableItems				  { background-color: #DDDDDD; }
-								
-input						  { font-family: Tahoma, MS Sans Serif, Arial, Sans Serif;
-							    font-weight: normal;
-				 			    font-size: 100%; }
-								
-select						  { font-family: Tahoma, MS Sans Serif, Arial, Sans Serif;
-							    font-weight: normal;
-				 			    font-size: 100%; }
-					
-.button						  { color: #000000; 
-								cursor: hand; 
-								border: solid 1px #808080; 
-								background: url(images/button_back.gif) center; 
-								padding:1px; }
-							
-.selectedLink				  { background-color: #99ccff; 
-								border:solid 1px #ffffff; }
-								
-.createLink					  { position:relative; top: 2px; }
-							
-/******************************************************************************/
-/******************************************************************************/
+:root {
+    /* --- surfaces (light mode, one hue: steel blue; only lightness moves) -- */
+    --surface-page:      #f4f6f9;   /* canvas behind the content well        */
+    --surface-well:      #ffffff;   /* content well                          */
+    --surface-inset:     #f0f2f6;   /* inputs, code, zebra                   */
+    --surface-raised:    #ffffff;   /* modal, popover                        */
 
-.msdeTitle 					  { font-size: 20pt;
-								font-weight: bold;
-								color:#99ccff; }
-								
-.adminTitle 				  { font-size: 20pt;
-								color: #333366;
-								font-weight: bold; }
+    /* --- chrome: matches the shipped logo artwork ------------------------- */
+    --chrome:            #c0c0c0;   /* header band (logo sits on this)       */
+    --chrome-line:       #a9adb4;
+    --sky:               #99ccff;   /* location band                         */
+    --sky-deep:          #6699ff;   /* tool rail                             */
 
-.text 						  { color: #000000;
-								text-decoration: none; }
-								
-.commandLink 				  { color: #4040ff;
-								text-decoration: underline;}
-								
-.columnHeader 				  { text-decoration: none;
-								font-weight: bold; }
+    /* --- ink: four levels ------------------------------------------------- */
+    --ink:               #14181f;   /* primary   - values, headings           */
+    --ink-2:             #454b56;   /* secondary - labels                     */
+    --ink-3:             #6b7280;   /* tertiary  - metadata                   */
+    --ink-4:             #9aa1ad;   /* muted     - disabled, hints            */
 
-.topButton 					  { font-weight: bold;
-								color: #333366;
-								text-decoration: none; }
+    /* --- lines ------------------------------------------------------------ */
+    --line:              #d8dce3;   /* standard separator                    */
+    --line-soft:         #e7eaef;   /* inner separator                       */
+    --line-strong:       #b9bfc9;   /* input/control outline                 */
 
-.tabSelected			  	  { font-weight: bold;
-								text-decoration:none;
-								background-color:#ccccff; }
-								
-.tabUnselected				  { color: #202020;
-								font-weight: normal;
-								text-decoration: none;
-								background-color: #9999dd; }
-								
-.tabSelectedBack			  { background-color: #ccccff; }
+    /* --- accents: one accent (link blue) + semantic ----------------------- */
+    --accent:            #1d4ed8;
+    --accent-ink:        #173fae;
+    --accent-wash:       #e8effc;
+    --rail-active:       #10305e;
+    --rail-active-ink:   #ffffff;
+    --success:           #2f7d4f;
+    --success-wash:      #e9f6ee;
+    --danger:            #b3261e;
+    --danger-wash:       #fdecea;
+    --warning:           #8a5a00;
+    --warning-wash:      #fdf4e3;
 
-.currentHeader				  { font-weight: bold;
-								text-decoration: none; }
+    /* --- controls --------------------------------------------------------- */
+    --field-bg:          #ffffff;
+    --field-line:        #b9bfc9;
+    --field-focus:       #1d4ed8;
+    --focus-ring:        0 0 0 3px rgba(29, 78, 216, 0.25);
 
-.internalLink				  { font-weight: bold; }
+    --radius-sm:         3px;
+    --radius-md:         6px;
+    --radius-lg:         8px;
 
-a.leftMenu 					  { color: #000000;
-								text-decoration: none;
-								padding: 4px; }
-/*
-a.leftMenu:hover 			  { color: #FFFFFF;
-								text-decoration: none; }
-*/
-a.leftMenu:visited 			  { color: #000000;
-								text-decoration: none; }
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+}
 
-a.leftMenuSelected			  { color: #000000;
-								text-decoration: none;
-								padding: 4px;
-								cursor: default; }
+/* ==========================================================================
+   Base
+   ========================================================================== */
 
-a.leftMenuSelected:hover 	  { color: #000000;
-								text-decoration: none; }
+html { -webkit-text-size-adjust: 100%; }
 
-a.leftMenuSelected:visited 	  { color: #000000;
-								text-decoration: none; }
+body {
+    font-family: "Segoe UI", "Segoe UI Web (West European)", Tahoma, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 400;
+    color: var(--ink);
+    background: var(--surface-page);
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
-.databaseListHeader 		  { font-weight:bold;
-								padding: 4px; }
-								
-.databaseListItem 			  { padding: 4px; }
-								
-.databaseListAction 		  { color:blue;
-								text-decoration:underline; }
+table {
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    border-collapse: separate;
+    border-spacing: 0;
+}
 
-a.databaseListBlack:hover 	  { color:black;
-								text-decoration:none; }
+a:link,
+a:visited { color: var(--accent); text-decoration: none; }
+a:hover   { color: var(--accent-ink); text-decoration: underline; }
+a:active  { color: var(--accent-ink); }
 
-a.databaseListBlack:visited   { color:black;
-								text-decoration:none; }
-								
-a.databaseListBlack 		  { color:black;
-								text-decoration:none; }
+/* Keyboard focus must always be visible - it was absent before. */
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+.aspNetButton:focus-visible {
+    outline: 2px solid var(--field-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+img { border: 0; }
+
+/* ==========================================================================
+   Links and inline text
+   ========================================================================== */
+
+.text          { color: var(--ink); text-decoration: none; }
+.commandLink   { color: var(--accent); text-decoration: underline; }
+.columnHeader  { font-weight: 600; text-decoration: none; color: var(--ink); }
+.topButton     { font-weight: 600; color: var(--rail-active); text-decoration: none; }
+.internalLink  { font-weight: 600; }
+.summaryHead   { color: var(--accent); font-weight: 600; }
+.title         { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 20px; letter-spacing: -0.01em; }
+.subtitle      { color: var(--ink-2); text-decoration: none; font-weight: 600; font-size: 16px; }
+.desc          { color: var(--ink-3); text-decoration: none; }
+.advanced      { color: var(--rail-active); font-weight: 600; text-decoration: none; }
+.form          { color: var(--ink); text-decoration: none; }
+.error         { color: var(--danger); text-decoration: none; }
+.currentHeader { font-weight: 600; text-decoration: none; color: var(--ink); }
+.grayDivide    { height: 2px; width: 120px; background: var(--line); }
+
+.msdeTitle { font-size: 20px; font-weight: 600; color: #7db4e8; letter-spacing: -0.01em; }
+.adminTitle { font-size: 24px; font-weight: 600; color: var(--rail-active); letter-spacing: -0.02em; }
+
+/* Breadcrumb / location line. Was completely unstyled before. */
+.currentItem {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+}
+a.currentItem:hover { color: var(--accent); text-decoration: none; }
+
+/* ==========================================================================
+   Section headers and dividers (the signature)
+   ========================================================================== */
+
+.databaseListHeader {
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 0 0 var(--space-1) 0;
+}
+
+.databaseListItem { padding: var(--space-2) var(--space-1); }
+.databaseListAction { color: var(--accent); text-decoration: none; }
+.databaseListAction:hover { text-decoration: underline; }
+
+a.databaseListBlack,
+a.databaseListBlack:visited,
+a.databaseListBlack:hover { color: var(--ink); text-decoration: none; }
+a.databaseListBlack:hover { color: var(--accent); }
+
+/* Dotted rule under a section header - keeps the original signature but
+   scales to the full width instead of stopping at 150px. The row also holds an
+   inline <img>, so line-height must be zeroed or the text baseline would inflate
+   a 3px spacer row to ~20px. */
+td[background*="blue_dotted_line"],
+td[background*="blue_dotted_line.gif"] {
+    background-image: repeating-linear-gradient(
+        to right,
+        var(--line-strong) 0 3px,
+        transparent 3px 7px
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 3px;
+    background-position: left top;
+    height: 3px;
+    font-size: 0;
+    line-height: 0;
+    padding: 0;
+}
+td[background*="blue_dotted_line"] > img { visibility: hidden; display: block; }
+
+.menuHeader {
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--rail-active);
+    padding: var(--space-2) var(--space-1) var(--space-1) var(--space-1);
+}
+
+/* ==========================================================================
+   Tool rail
+   ========================================================================== */
+
+a.leftMenu,
+a.leftMenu:visited {
+    color: var(--ink);
+    text-decoration: none;
+    display: block;
+    padding: 5px var(--space-2);
+    border-radius: var(--radius-sm);
+    line-height: 1.35;
+    transition: background-color 120ms ease-out, color 120ms ease-out;
+}
+a.leftMenu:hover { background: rgba(255, 255, 255, 0.55); text-decoration: none; color: var(--ink); }
+a.leftMenu:focus-visible { background: rgba(255, 255, 255, 0.75); }
+
+a.leftMenuSelected,
+a.leftMenuSelected:visited,
+a.leftMenuSelected:hover {
+    color: var(--rail-active-ink);
+    text-decoration: none;
+    padding: 5px var(--space-2);
+    cursor: default;
+}
+
+/* Selected rail item: the class the ServerToolbar sets on the <td>. */
+td.selectedLink {
+    background-color: var(--rail-active) !important;
+    border-radius: var(--radius-sm);
+    box-shadow: inset 3px 0 0 var(--sky);
+}
+td.selectedLink a { color: var(--rail-active-ink) !important; }
+td.selectedLink img { filter: brightness(1.6); }
+
+/* Icons inside the rail read poorly on the deep blue without this. */
+td[bgcolor="#6699ff"] a img { filter: none; }
+
+.selectedMenu {
+    font-weight: 600;
+    color: var(--rail-active);
+    text-decoration: none;
+}
+a.newSettings { color: var(--accent); }
+
+/* ==========================================================================
+   Data tables (DataGrid / GridView)
+   ========================================================================== */
+
+/* Header */
+tr.tableHeader,
+td.tableHeader,
+.tableHeader,
+th.tableHeader {
+    background-color: var(--rail-active) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+}
+
+/* Rows */
+tr.tableItems,
+.tableItems {
+    background-color: var(--surface-well) !important;
+    color: var(--ink);
+    padding: var(--space-2) var(--space-3);
+}
+
+/* Zebra + hover, scoped so it cannot leak onto form pages. */
+table[id*="DataGrid"],
+table[id*="GridView"],
+table[id*="grid"] { width: 100%; border-collapse: collapse; }
+
+table[id*="DataGrid"] > tbody > tr > td,
+table[id*="GridView"] > tbody > tr > td {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+}
+
+table[id*="DataGrid"] > tbody > tr > th,
+table[id*="GridView"] > tbody > tr > th {
+    padding: var(--space-2) var(--space-3);
+    background: var(--rail-active);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--line-strong);
+}
+
+table[id*="DataGrid"] > tbody > tr:nth-child(even) > td,
+table[id*="GridView"] > tbody > tr:nth-child(even) > td { background: var(--surface-inset); }
+
+table[id*="DataGrid"] > tbody > tr:hover > td,
+table[id*="GridView"] > tbody > tr:hover > td { background: var(--accent-wash); }
+
+/* Numbers line up and never shift the layout while a value changes. */
+td[align="right"],
+th[align="right"] { font-variant-numeric: tabular-nums; }
+
+/* Pager */
+table[id*="DataGrid"] .aspNetPager,
+table[id*="GridView"] .aspNetPager { padding-top: var(--space-2); }
+
+.tabSelected,
+.tabSelectedBack {
+    font-weight: 600;
+    text-decoration: none;
+    background-color: var(--surface-well);
+    color: var(--ink);
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 2px solid var(--accent);
+}
+.tabUnselected {
+    color: var(--ink-2);
+    font-weight: 500;
+    text-decoration: none;
+    background-color: var(--surface-inset);
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 2px solid transparent;
+}
+.tabUnselected:hover { color: var(--accent); background: var(--accent-wash); }
+
+/* ==========================================================================
+   Controls: buttons, inputs, selects, radio lists
+   ========================================================================== */
+
+input, select, textarea {
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--field-bg);
+    border: 1px solid var(--field-line);
+    border-radius: var(--radius-sm);
+    padding: 5px var(--space-2);
+    box-sizing: border-box;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--field-focus);
+    box-shadow: var(--focus-ring);
+}
+
+input[disabled], select[disabled], textarea[disabled] {
+    background: var(--surface-inset);
+    color: var(--ink-4);
+    cursor: not-allowed;
+}
+
+/* ASP.NET <asp:Button> renders as <input type=submit>; both spellings of the
+   class are accepted because one legacy page uses "Button". */
+input.button,
+input.Button,
+.button,
+.Button,
+input[type="submit"],
+input[type="button"] {
+    color: var(--ink);
+    background: var(--surface-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background-color 120ms ease-out, border-color 120ms ease-out, transform 80ms ease-out;
+}
+
+input.button:hover,
+input.Button:hover,
+.button:hover,
+.Button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+    background: var(--accent-wash);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+}
+
+input.button:active,
+input.Button:active,
+.button:active,
+.Button:active,
+input[type="submit"]:active,
+input[type="button"]:active { transform: scale(0.97); }
+
+input.button:disabled,
+input.Button:disabled,
+.button:disabled,
+.Button:disabled,
+input[type="submit"]:disabled {
+    background: var(--surface-inset);
+    color: var(--ink-4);
+    border-color: var(--line);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.createLink { position: relative; top: 2px; }
+
+/* ==========================================================================
+   Banners: notices, success, danger (used by Login and the list pages)
+   ========================================================================== */
+
+.banner {
+    display: block;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--line);
+    background: var(--surface-inset);
+    color: var(--ink-2);
+    margin: 0 0 var(--space-3) 0;
+    line-height: 1.5;
+}
+.banner strong { color: var(--ink); }
+.banner--error   { background: var(--danger-wash); border-color: #f0c4c0; color: #7a1a15; }
+.banner--success { background: var(--success-wash); border-color: #bfe3cd; color: #1e5a38; }
+.banner--warning { background: var(--warning-wash); border-color: #ecd7a8; color: #6b4600; }
+
+/* Empty state: a grid with no rows used to render as a bare header bar. */
+.emptyState {
+    display: block;
+    padding: var(--space-6) var(--space-4);
+    text-align: center;
+    color: var(--ink-3);
+    background: var(--surface-inset);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-md);
+    margin-top: var(--space-2);
+}
+.emptyState strong { display: block; color: var(--ink-2); font-weight: 600; margin-bottom: var(--space-1); }
+.emptyState a { font-weight: 600; }
+
+/* Field-level validation (asp:Validator) */
+.fieldError,
+span[id*="Validator"] { color: var(--danger); font-size: 13px; padding-left: var(--space-2); }
+
+/* Label/value pairs on forms */
+.fieldLabel { color: var(--ink-2); font-weight: 500; }
+
+.fieldHint {
+    display: block;
+    color: var(--ink-4);
+    font-size: 12px;
+    margin-top: 3px;
+}
+.fieldHint code {
+    font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+    background: var(--surface-inset);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+    padding: 0 4px;
+    color: var(--ink-2);
+}
+
+/* Login card: a single focal panel instead of an unstyled label/value table. */
+.loginCard {
+    background: var(--surface-well);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    max-width: 460px;
+}
+.loginField {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--line-soft);
+}
+.loginField:last-of-type { border-bottom: 0; }
+.loginField > label { grid-column: 1; }
+.loginField > input[type="text"],
+.loginField > input[type="password"],
+.loginField > span,
+.loginField > div { grid-column: 2; }
+/* Validators and hints sit under the control, spanning the input column. */
+.loginField > span[id*="Validator"],
+.loginField > .fieldHint,
+.loginField > span.fieldHint { grid-column: 2; }
+.loginField > input { width: 100%; max-width: 280px; }
+.loginField table { border: 0; }
+
+.loginActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line-soft);
+}
+.loginActions input.button { min-width: 120px; font-weight: 600; }
+
+@media screen and (max-width: 560px) {
+    .loginCard { padding: var(--space-4); }
+    .loginField { grid-template-columns: minmax(0, 1fr); }
+    .loginField > *,
+    .loginField > span[id*="Validator"],
+    .loginField > .fieldHint { grid-column: 1 !important; }
+}
 
 
-a.newSettings				  { color:#336699; }
+/* ==========================================================================
+   Modal (AjaxControlToolkit ModalPopupExtender)
+   ========================================================================== */
 
-.selectedMenu 				  { font-weight: bold;
-								color: #FFa500;
-								text-decoration: none; }
-
-.menuHeader					  { font-weight: bold;
-								padding-bottom: 3px;
-								padding: 4px; }
-
-.title 						  { color: #333366;
-								text-decoration: none;
-								font-weight: bold; }
-
-.subtitle 					  { color: #336699;
-								text-decoration: none;
-								font-weight: bold; }
-
-.desc 						  { color: #336699;
-								text-decoration: none; }
-
-.advanced 					  { color: #333366;
-								font-weight: bold;
-								text-decoration: none; }
-
-.form 						  { color: #000000;
-								text-decoration: none; }
-
-.tableHeader				  { color: #ffffff;
-								text-decoration: none;
-								font-weight: bold; }
-
-.error						  { color: #ff0000;
-								text-decoration: none; }
-
-a.summaryHead      			  { color: #336699;
-								font-weight: bold; }
-
-.grayDivide					  { height: 2px;
-								width: 120px; }
-								
-
-  
-
-/*Modal Popup*/
 .modalBackground {
-	background-color:Gray;
-	filter:alpha(opacity=70);
-	opacity:0.2;
+    background-color: #1b1f27;
+    filter: alpha(opacity=55);
+    opacity: 0.55;
 }
 
 .modalPopup {
-	background-color:#ffffdd;
-	border-width:3px;
-	border-style:solid;
-	border-color:Gray;
-	padding:3px;
-	width:250px;
+    background: var(--surface-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    padding: 0;
+    width: 320px;
+    overflow: hidden;
+}
+.modalPopup > div:first-child,
+.modalPopup .modalPopupHeader {
+    background: var(--surface-inset);
+    color: var(--ink);
+    font-weight: 600;
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--line);
+}
+
+/* ==========================================================================
+   Responsive: the fixed 172px rail would otherwise crush wide grids
+   ========================================================================== */
+
+@media screen and (max-width: 860px) {
+    body { font-size: 13px; }
+    td[width="172"] { width: 150px; }
+    .databaseListItem { padding: var(--space-2) var(--space-1); overflow-x: auto; }
+}
+
+@media screen and (max-width: 560px) {
+    /* Stack the rail above the content instead of squeezing the grid. */
+    table { font-size: 13px; }
+    td[width="172"] { width: 100%; }
+}
+
+/* Respect the OS "reduce motion" setting. */
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+    input.button:active, .button:active { transform: none; }
 }

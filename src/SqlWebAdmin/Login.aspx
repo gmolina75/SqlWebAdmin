@@ -83,84 +83,42 @@
                         <!--END ONE LINE-->
                         <td align="left" class="databaseListItem" width="100%">
                             <!-- PAGE CONTENT: START -->
-                            <asp:Label ID="LogoutInfoLabel" runat="server" Visible="False">You are now logged out.</asp:Label>
-                            <asp:Label ID="LoginInfoLabel" runat="server" Visible="False" Font-Size="10 pt" Font-Bold="true">Welcome to the Web Data Administrator.</asp:Label>
+                            <asp:Label ID="LogoutInfoLabel" runat="server" Visible="False" CssClass="banner banner--success">You are now logged out.</asp:Label>
+                            <asp:Label ID="LoginInfoLabel" runat="server" Visible="False" CssClass="banner"><strong>Welcome</strong> to the Web Data Administrator.</asp:Label>
+                            <asp:Label ID="lblCredMsg" runat="server" CssClass="subtitle" Style="display: block; margin-bottom: 12px;">Sign in with your SQL Server credentials</asp:Label>
+
+                            <div class="loginCard">
+                                <div class="loginField">
+                                    <asp:Label ID="lblUser" AssociatedControlID="UsernameTextBox" runat="server" CssClass="fieldLabel">Username</asp:Label>
+                                    <asp:TextBox ID="UsernameTextBox" runat="server" Columns="35" autocomplete="username" autofocus="autofocus"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="UsernameRequiredFieldValidator" runat="server" ErrorMessage="Enter a user name"
+                                        ControlToValidate="UsernameTextBox" Display="Dynamic" CssClass="fieldError"></asp:RequiredFieldValidator>
+                                </div>
+                                <div class="loginField">
+                                    <asp:Label ID="lblPassword" AssociatedControlID="PasswordTextBox" runat="server" CssClass="fieldLabel">Password</asp:Label>
+                                    <asp:TextBox ID="PasswordTextBox" runat="server" Columns="35" TextMode="Password" autocomplete="current-password"></asp:TextBox>
+                                </div>
+                                <div class="loginField">
+                                    <asp:Label ID="lblServer" AssociatedControlID="ServerTextBox" runat="server" CssClass="fieldLabel">Server</asp:Label>
+                                    <asp:TextBox ID="ServerTextBox" runat="server" Columns="35" autocomplete="off"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="ServerRequiredFieldValidator" runat="server" ErrorMessage="Enter a server name"
+                                        ControlToValidate="ServerTextBox" Display="Dynamic" CssClass="fieldError"></asp:RequiredFieldValidator>
+                                    <span class="fieldHint">For a local instance use <code>.\SQLEXPRESS</code></span>
+                                </div>
+                                <div class="loginField">
+                                    <asp:Label ID="lblAuth" AssociatedControlID="AuthRadioButtonList" runat="server" CssClass="fieldLabel">Authentication method</asp:Label>
+                                    <asp:RadioButtonList ID="AuthRadioButtonList" runat="server" AutoPostBack="True"
+                                        OnSelectedIndexChanged="AuthRadioButtonList_SelectedIndexChanged">
+                                        <asp:ListItem Value="sql" Selected="True">SQL Login</asp:ListItem>
+                                    </asp:RadioButtonList>
+                                </div>
+                                <div class="loginActions">
+                                    <asp:Button ID="LoginButton" CssClass="button" runat="server" Text="Sign in" OnClick="LoginButton_Click"></asp:Button>
+                                </div>
+                            </div>
+
                             <br>
-                            <br>
-                            <asp:Label ID="lblCredMsg" runat="server" Font-Size="8 pt">Please enter your SQL Server credentials:</asp:Label>
-                            <br>
-                            <br>
-                            <table border="0" cellpadding="0" cellspacing="1">
-                                <tr>
-                                    <td class="databaseListItem">
-                                        Username
-                                    </td>
-                                    <td class="databaseListItem" width="50">
-                                        &nbsp;
-                                    </td>
-                                    <td class="databaseListItem">
-                                        <asp:TextBox ID="UsernameTextBox" runat="server" Columns="35"></asp:TextBox>
-                                    </td>
-                                    <td class="databaseListItem">
-                                        <asp:RequiredFieldValidator ID="UsernameRequiredFieldValidator" runat="server" ErrorMessage=" Must specify a user name"
-                                            ControlToValidate="UsernameTextBox" Display="Dynamic"></asp:RequiredFieldValidator>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="databaseListItem">
-                                        Password
-                                    </td>
-                                    <td class="databaseListItem" width="50">
-                                        &nbsp;
-                                    </td>
-                                    <td class="databaseListItem">
-                                        <asp:TextBox ID="PasswordTextBox" runat="server" Columns="35" TextMode="Password"></asp:TextBox>
-                                    </td>
-                                    <td class="databaseListItem">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="databaseListItem">
-                                        Server
-                                    </td>
-                                    <td class="databaseListItem" width="50">
-                                        &nbsp;
-                                    </td>
-                                    <td class="databaseListItem">
-                                        <asp:TextBox ID="ServerTextBox" runat="server" Columns="35"></asp:TextBox>
-                                    </td>
-                                    <td class="databaseListItem">
-                                        <asp:RequiredFieldValidator ID="ServerRequiredFieldValidator" runat="server" ErrorMessage=" Must specify a server name"
-                                            ControlToValidate="ServerTextBox" Display="Dynamic"></asp:RequiredFieldValidator>
-                                    </td>
-                                </tr>
-                                <tr valign="top">
-                                    <td class="databaseListItem">
-                                        <asp:Label ID="lblAuth" runat="server">Authentication<br>Method</asp:Label>
-                                    </td>
-                                    <td class="databaseListItem" width="50">
-                                    </td>
-                                    <td class="databaseListItem" nowrap>
-                                        <asp:RadioButtonList ID="AuthRadioButtonList" runat="server" AutoPostBack="True"
-                                            OnSelectedIndexChanged="AuthRadioButtonList_SelectedIndexChanged">
-                                            <asp:ListItem Value="sql" Selected="True">SQL Login</asp:ListItem>
-                                        </asp:RadioButtonList>
-                                    </td>
-                                    <td class="databaseListItem">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="databaseListItem" colspan="3" align="right">
-                                        <asp:Button ID="LoginButton" CssClass="button" onMouseOver="this.style.color='#808080';"
-                                            onMouseOut="this.style.color='#000000';" runat="server" Text="Login" OnClick="LoginButton_Click">
-                                        </asp:Button>
-                                    </td>
-                                    <td class="databaseListItem">
-                                    </td>
-                                </tr>
-                            </table>
-                            <br>
-                            <asp:Label ID="ErrorLabel" runat="server" Visible="False" ForeColor="red"></asp:Label>
+                            <asp:Label ID="ErrorLabel" runat="server" Visible="False" CssClass="banner banner--error" role="alert"></asp:Label>
                             <!-- PAGE CONTENT: END -->
                         </td>
                     </tr>

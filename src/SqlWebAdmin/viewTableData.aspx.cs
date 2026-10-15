@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
@@ -16,6 +18,13 @@ public partial class viewTableData : System.Web.UI.Page
 {
     private const string controlPrefix1 = "Haiyan_Du_True_";//Dynamically add database field, if it is primary key, set id =controlPrefix1
     private const string controlPrefix2 = "Haiyan_Du_False_";//else use controlPrefix2
+
+    /// <summary>
+    /// Maximum number of rows loaded into the grid. Viewing a table must never
+    /// try to pull an unbounded result set into memory.
+    /// </summary>
+    private const int MaxRows = 200;
+
     protected void Page_Load(object sender, EventArgs e)
     {
         //if (!Page.IsPostBack)
@@ -39,19 +48,27 @@ public partial class viewTableData : System.Web.UI.Page
     /// </summary>
     public void ShowTableData()
     {
+        this.curTable.Text = "";
+        this.MessageLabel.Text = "";
+
         try
         {
-            this.curTable.Text = "";
+            string tableName = Request["table"];
+            if (String.IsNullOrEmpty(tableName))
+            {
+                Response.Redirect("error.aspx?error=1002");
+                return;
+            }
+
             SqlServer server = SqlServer.CurrentServer;
             server.Connect();
 
             SqlDatabase database = SqlDatabase.CurrentDatabase(server);
 
-            SqlTable table = database.Tables[HttpContext.Current.Server.HtmlDecode(HttpContext.Current.Request["table"])];
-            if (table.PrimaryKeys == null || table.PrimaryKeys.Length < 1)
-            {
-                table.AddIDColumn();
-            }
+            SqlTable table = database.Tables[HttpContext.Current.Server.HtmlDecode(tableName)];
+
+            // The null check has to happen before anything touches the table:
+            // asking a missing table for its primary keys used to throw.
             if (table == null)
             {
                 server.Disconnect();
@@ -60,21 +77,33 @@ public partial class viewTableData : System.Web.UI.Page
                 Response.Redirect(String.Format("error.aspx?error={0}", 1002));
                 return;
             }
-           
-            this.GridView_ViewTableData.DataSource =table.GetTableData();
-            this.GridView_ViewTableData.DataBind();          
-       
 
-            this.curTable.Text = "Table - " + table.Name;
-          
+            if (table.PrimaryKeys == null || table.PrimaryKeys.Length < 1)
+            {
+                table.AddIDColumn();
+            }
+
+            DataTable data = table.GetTableData(MaxRows);
+            this.GridView_ViewTableData.DataSource = data;
+            this.GridView_ViewTableData.DataBind();
+
+            this.curTable.Text = Server.HtmlEncode("Table - " + table.Name);
+
+            if (data.Rows.Count >= MaxRows)
+            {
+                this.MessageLabel.Text = String.Format(
+                    "Showing the first {0} rows. Use the Query page to see everything.",
+                    MaxRows);
+            }
+
             server.Disconnect();
-            
-          
-
         }
         catch (Exception ex)
         {
-            this.MessageLabel.Text = ex.ToString();
+            // Never render a stack trace to the browser: log it and show a
+            // readable message instead.
+            Context.Trace.Warn("viewTableData", "Could not load table data", ex);
+            this.MessageLabel.Text = Server.HtmlEncode("Could not load the table: " + ex.Message);
         }
     }
     /// <summary>
@@ -144,49 +173,76 @@ public partial class viewTableData : System.Web.UI.Page
         try
         {
             SqlTable curTable = SqlTable.CurrentTable;
+            if (curTable == null)
+            {
+                Response.Redirect("error.aspx?error=1002");
+                return;
+            }
 
-            string updateFields = "set ";
-            string whereClause = "";
+            List<string> setClauses = new List<string>();
+            List<string> whereClauses = new List<string>();
+            List<SqlParameter> parameters = new List<SqlParameter>();
+            int parameterIndex = 0;
 
             foreach (Control c in this.dbFields.Controls)
             {
-                if (c.ID.StartsWith(controlPrefix1) || c.ID.StartsWith(controlPrefix2)) //Text Box Field
-                {
-                    TextBox curBox = (TextBox)c;
-                    string colName = curBox.ID;
-                    if (curBox.Enabled) //not key field, and not object/binary data type
-                    {
-                        colName = colName.Replace(controlPrefix2, "");
-                        string updatedValue = curBox.Text.Trim();
-                        updateFields += colName + "='" + updatedValue + "',";
-                    }
-                    else if (curBox.ID.StartsWith(controlPrefix1)) //key field
-                    {                       
-                        colName = colName.Replace(controlPrefix1 , "");
-                        whereClause += colName + "='" + curBox.Text.Trim() + "',";
-                    }
+                if (c.ID == null || !(c.ID.StartsWith(controlPrefix1) || c.ID.StartsWith(controlPrefix2)))
+                    continue; // not a field text box
 
+                TextBox curBox = (TextBox)c;
+                bool isKey = curBox.ID.StartsWith(controlPrefix1);
+                string colName = isKey
+                    ? curBox.ID.Substring(controlPrefix1.Length)
+                    : curBox.ID.Substring(controlPrefix2.Length);
+
+                // Values travel as parameters and identifiers are bracket quoted,
+                // so a cell containing "' or a column named "x]" can no longer
+                // change the shape of the statement.
+                string parameterName = "@p" + parameterIndex++;
+                parameters.Add(new SqlParameter(parameterName, curBox.Text.Trim()));
+
+                if (curBox.Enabled) //not key field, and not object/binary data type
+                {
+                    setClauses.Add(SqlIdentifier.Quote(colName) + "=" + parameterName);
+                }
+                else if (isKey) //key field
+                {
+                    whereClauses.Add(SqlIdentifier.Quote(colName) + "=" + parameterName);
                 }
             }
-            updateFields = updateFields.Substring(0, updateFields.Length - 1);
-            whereClause = whereClause.Substring(0, whereClause.Length - 1);
-            string sqlCommand = string.Format("Update {0} set {1} where {2}"
-                , curTable.Name
-                , updateFields
-                , whereClause);
+
+            if (setClauses.Count == 0 || whereClauses.Count == 0)
+            {
+                this.programmaticModalPopup.Hide();
+                this.MessageLabel.Text =
+                    "This table has no editable key column, so rows cannot be updated safely.";
+                return;
+            }
+
+            string sqlCommand = String.Format(
+                "UPDATE {0} SET {1} WHERE {2}",
+                SqlIdentifier.QuoteQualified(curTable.Owner, curTable.Name),
+                String.Join(", ", setClauses.ToArray()),
+                String.Join(" AND ", whereClauses.ToArray()));
+
             SqlServer server = SqlServer.CurrentServer;
             server.Connect();
             SqlDatabase database = SqlDatabase.CurrentDatabase(server);
-            server.Query(sqlCommand, database.Name);
+            server.ExecuteNonQuery(sqlCommand, database.Name, parameters.ToArray());
             server.Disconnect();
+
+            this.programmaticModalPopup.Hide();
+
+            // Reload so the grid reflects the change instead of showing stale data.
+            ShowTableData();
+            this.MessageLabel.Text = "Row updated.";
         }
         catch (Exception ex)
         {
-            Application["Error"] = ex;
-            Response.Redirect("Error.aspx");
-
+            Context.Trace.Warn("viewTableData", "Could not update row", ex);
+            this.programmaticModalPopup.Hide();
+            this.MessageLabel.Text = Server.HtmlEncode("Could not update the row: " + ex.Message);
         }
-
     }
     
     /// <summary>

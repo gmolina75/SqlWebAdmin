@@ -196,8 +196,8 @@
 														</asp:TemplateColumn>
 													</Columns>
 												</asp:datagrid>
-												<asp:label id="TableTypeErrorLabel" runat="server" EnableViewState="False" Font-Bold="true"
-													Font-Size="10">There are no tables to display.</asp:label>
+												<asp:label id="TableTypeErrorLabel" runat="server" EnableViewState="False" CssClass="emptyState"
+													><strong>No tables to display</strong>This database has no tables you can see, or the filter is hiding them.</asp:label>
 											</td>
 										</tr>
 										<!-- Section END -->

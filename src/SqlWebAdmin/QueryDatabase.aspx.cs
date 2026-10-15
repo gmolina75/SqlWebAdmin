@@ -80,17 +80,23 @@ namespace SqlWebAdmin
             // Grab file from post data
             HttpPostedFile file = FileUploadInput.PostedFile;
 
-            int length = file.ContentLength;
+            if (file == null || file.ContentLength == 0) {
+                ErrorLabel.Visible = true;
+                ErrorLabel.Text = "Choose a SQL file to load first.";
+                ResultsPanel.Visible = false;
+                return;
+            }
 
-            byte[] buff = new byte[length];
-            file.InputStream.Read(buff, 0, length);
+            // Decode the upload as text instead of casting each byte to a char:
+            // the old conversion turned every non-ASCII byte (accents, ñ, UTF-8
+            // sequences) into garbage characters.
+            string script;
+            using (System.IO.StreamReader reader = new System.IO.StreamReader(
+                file.InputStream, System.Text.Encoding.UTF8, true)) {
+                script = reader.ReadToEnd();
+            }
 
-            // Convert from byte array to string
-            StringBuilder qsb = new StringBuilder();
-            for (int i = 0; i < length; i++)
-                qsb.Append(Convert.ToChar(buff[i]));
-
-            QueryTextbox.Text = qsb.ToString();
+            QueryTextbox.Text = script;
         }
 
         protected void ExecuteButton_Click(object sender, System.EventArgs e)
@@ -123,8 +129,21 @@ namespace SqlWebAdmin
                     String.Format("Server: Msg {0}, Level {1}, State {2}, Line {3}<br>\n", new object[] {ex.Number, ex.Class, ex.State, ex.LineNumber}) +
                     Server.HtmlEncode(ex.Message).Replace("\n", "<br>") + "<br>\n";
             }
-
-            server.Disconnect();
+            catch (Exception ex)
+            {
+                // Anything else (connection failures, timeout, invalid database)
+                // used to reach the global error page and lose the query text.
+                ResultsPanel.Visible = false;
+                ErrorLabel.Visible = true;
+                ErrorLabel.Text =
+                    "The following error occured while executing the query:<br>\n" +
+                    Server.HtmlEncode(ex.Message).Replace("\n", "<br>") + "<br>\n";
+            }
+            finally
+            {
+                // Always release the connection, whatever went wrong above.
+                server.Disconnect();
+            }
 
 
             // Print output tables, if they exist

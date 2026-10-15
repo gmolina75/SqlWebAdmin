@@ -304,6 +304,42 @@ namespace SqlAdmin {
 		}
 
 		/// <summary>
+		/// Executes a single statement that does not return rows (INSERT, UPDATE, DELETE,
+		/// DDL) against a specific database, passing values as parameters.
+		/// </summary>
+		/// <param name="commandText">The statement to execute.</param>
+		/// <param name="database">The database to run the statement on; null or empty uses the login default.</param>
+		/// <param name="parameters">The parameters referenced by commandText.</param>
+		/// <returns>The number of rows affected.</returns>
+		/// <remarks>
+		/// Callers must pass user supplied values as parameters rather than concatenating
+		/// them into commandText; identifiers embedded in the text should be quoted with
+		/// <see cref="SqlIdentifier.Quote"/>.
+		/// </remarks>
+		public int ExecuteNonQuery(string commandText, string database, params SqlParameter[] parameters) {
+			if (commandText == null)
+				throw new ArgumentNullException("commandText");
+
+			string connectionString;
+			if (database == null || database.Length == 0) {
+				connectionString = GetConnectionString();
+			}
+			else {
+				ValidateDatabaseName(database);
+				connectionString = GetConnectionString() + "; Initial Catalog=" + database;
+			}
+
+			using (SqlConnection connection = new SqlConnection(connectionString))
+			using (SqlCommand command = new SqlCommand(commandText, connection)) {
+				if (parameters != null && parameters.Length > 0)
+					command.Parameters.AddRange(parameters);
+
+				connection.Open();
+				return command.ExecuteNonQuery();
+			}
+		}
+
+		/// <summary>
 		/// Runs a batch of SQL queries on the server.
 		/// </summary>
 		/// <param name="query">

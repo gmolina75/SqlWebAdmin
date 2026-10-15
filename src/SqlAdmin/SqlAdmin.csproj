@@ -159,6 +159,9 @@
     <Compile Include="SqlFileProperties.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SqlIdentifier.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="SqlLanguage.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -166,6 +169,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SqlLogin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SqlLiteral.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SqlLoginCollection.cs">
